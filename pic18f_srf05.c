@@ -50,7 +50,7 @@ int lire_derniere_mesure(void)
     return derniereMesure;
 }
 
-void interrupt interruptionsBP() {
+void interrupt low_priority interruptionsBP() {
     // interrupt TMR4 (TIC TAC)
     if (PIR5bits.TMR4IF) {
         PIR5bits.TMR4IF = 0;
@@ -183,7 +183,7 @@ void main(void) {
     T4CONbits.TMR4ON = 1;         // activer le timer
 
     // config interrupt TMR4
-    IPR5bits.TMR4IP = 1;            // interrupt basse prio
+    IPR5bits.TMR4IP = 0;            // interrupt basse prio
     PIE5bits.TMR4IE = 1;            // activer interrupt TMR4
 
     // config pour trigger
@@ -195,7 +195,7 @@ void main(void) {
     WPUBbits.WPUB2 = 1;       // activer pull up RB2
 
 
-    INTCON3bits.INT2IP = 1;     // INT2 basse priotité
+    INTCON3bits.INT2IP = 0;     // INT2 basse priotité
     INTCON2bits.INTEDG2 = 1;        // flanc montant
     INTCON3bits.INT2IE = 1;         // activer INT2
 
