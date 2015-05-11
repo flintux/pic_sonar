@@ -33,13 +33,34 @@ typedef enum {
     ECHO_DOWN
 }event_t;
 
-void machine_sonar(event_t event);
+int derniereMesure = 0;
+
+int machine_sonar(event_t event);
+
+void maj_derniere_mesure(int mesure);
+int lire_derniere_mesure(void);
+
+void maj_derniere_mesure(int mesure)
+{
+    derniereMesure = mesure;
+}
+
+int lire_derniere_mesure(void)
+{
+    return derniereMesure;
+}
 
 void low_priority interrupt interruptionsBP() {
     // interrupt TMR4 (TIC TAC)
     if (PIR5bits.TMR4IF) {
         PIR5bits.TMR4IF = 0;
-        machine_sonar(TICTAC);
+        if (machine_sonar(TICTAC) < 0) {
+            LATAbits.LA5 = 0b1;
+        } else
+        {
+            LATAbits.LA5 = 0b0;
+            machine_sonar(DEMARRE);
+        }
     }
 
     // interrupt INT2 ECHO
@@ -52,7 +73,7 @@ void low_priority interrupt interruptionsBP() {
             // mettre l'IRQ au flanc descendant
             INTCON2bits.INTEDG2 = 0;
 
-            // machiine ECHO_UP
+            machine_sonar(ECHO_UP);
 
 
         // si IRQ flanc descendant
@@ -60,7 +81,7 @@ void low_priority interrupt interruptionsBP() {
             // mettre l'IRQ au flanc montant
             INTCON2bits.INTEDG2 = 1;
 
-            // mcahine ECHO DOWN
+            machine_sonar(ECHO_DOWN);
         }
     }
 
@@ -69,16 +90,21 @@ void low_priority interrupt interruptionsBP() {
 /*
  *
  */
-void machine_sonar(event_t event) {
+int machine_sonar(event_t event)
+{
 
     static etat_t status = REPOS;
+    static int cptTicTac = -2;
 
     switch (status) {
         case REPOS:
             switch (event) {
                 case TICTAC:
+                    cptTicTac++;
                     break;
                 case DEMARRE:
+                    cptTicTac = 0;
+                    status = ATTENTE;
                     break;
                 case ECHO_UP:
                     break;
@@ -89,10 +115,19 @@ void machine_sonar(event_t event) {
         case ATTENTE:
             switch (event) {
                 case TICTAC:
+                    cptTicTac++;
+                    if (cptTicTac > 15)
+                    {
+                        // on a trop attendu, pulse invalide
+                        cptTicTac = -2;
+                        status = REPOS;
+                    }
                     break;
                 case DEMARRE:
                     break;
                 case ECHO_UP:
+                    cptTicTac = 0;
+                    status = MESURE;
                     break;
                 case ECHO_DOWN:
                     break;
@@ -101,16 +136,28 @@ void machine_sonar(event_t event) {
         case MESURE:
             switch (event) {
                 case TICTAC:
+                    cptTicTac++;
+                    if (cptTicTac > 600)
+                    {
+                        // mesure trop long, petit problem
+                        status = REPOS;
+                        cptTicTac = -2;
+                    }
                     break;
                 case DEMARRE:
                     break;
                 case ECHO_UP:
+                    cptTicTac = 0;
                     break;
                 case ECHO_DOWN:
+                    maj_derniere_mesure(cptTicTac);
+                    cptTicTac = -2;
+                    status = REPOS;
                     break;
             }
             break;
     }
+    return cptTicTac;
 }
 
 /*
