@@ -50,7 +50,7 @@ int lire_derniere_mesure(void)
     return derniereMesure;
 }
 
-void low_priority interrupt interruptionsBP() {
+void interrupt interruptionsBP() {
     // interrupt TMR4 (TIC TAC)
     if (PIR5bits.TMR4IF) {
         PIR5bits.TMR4IF = 0;
@@ -177,25 +177,25 @@ void main(void) {
     
 
     //config du TMR4 pour 58uS par OF
-    T4CONbits.T4OUTPS = 0b0000;     // pas de div entre TMR et IRQ
-    T4CONbits.T4CKPS = 0b01;        // diviser par 4, FOSC/4 et entré TMR
+    T4CONbits.T4OUTPS = 0;     // pas de div entre TMR et IRQ
+    T4CONbits.T4CKPS = 1;        // diviser par 4, FOSC/4 et entré TMR
     PR4 = 232;                      // 232 cycles * 250ns = 58us
-    T4CONbits.TMR4ON = 0b1;         // activer le timer
+    T4CONbits.TMR4ON = 1;         // activer le timer
 
     // config interrupt TMR4
-    IPR5bits.TMR4IP = 0;            // interrupt basse prio
+    IPR5bits.TMR4IP = 1;            // interrupt basse prio
     PIE5bits.TMR4IE = 1;            // activer interrupt TMR4
 
     // config pour trigger
-    TRISAbits.RA5 = 0b0;        // RA5 sortie trigger
+    TRISAbits.RA5 = 0;        // RA5 sortie trigger
 
     // config echo
     INTCON2bits.RBPU = 0;       // activer les résistances de tirage
-    TRISBbits.RB2 = 0b1;        // RB2 entrée
-    WPUBbits.WPUB2 = 0b1;       // activer pull up RB2
+    TRISBbits.RB2 = 1;        // RB2 entrée
+    WPUBbits.WPUB2 = 1;       // activer pull up RB2
 
 
-    INTCON3bits.INT2IP = 0;     // INT2 basse priotité
+    INTCON3bits.INT2IP = 1;     // INT2 basse priotité
     INTCON2bits.INTEDG2 = 1;        // flanc montant
     INTCON3bits.INT2IE = 1;         // activer INT2
 
@@ -203,7 +203,7 @@ void main(void) {
     // activer les interruptions
     RCONbits.IPEN = 1;          // activer les niveau d'interrupt
     // interruption haute priorité
-    INTCONbits.GIEH = 0;
+    INTCONbits.GIEH = 1;
     // interruptions basse priorité
     INTCONbits.GIEL = 1;
 
