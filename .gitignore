@@ -1,0 +1,55 @@
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+
+#netbeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+.nb-gradle/
+funclist
+
+#tex documentation
+documentation/rapport/*.aux
+documentation/rapport/*.log
+documentation/rapport/*.pdf
+documentation/rapport/*.gz
+documentation/rapport/*.toc
+
+#proteus files
+*.PWI
+*.SDF
+*.DBK
